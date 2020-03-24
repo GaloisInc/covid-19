@@ -1,0 +1,61 @@
+
+# coding: utf-8
+
+# In[27]:
+
+
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+import re
+
+URL = "https://coronavirus.ohio.gov/wps/portal/gov/covid-19/"
+r = requests.get(URL) 
+
+r.content
+
+
+# In[103]:
+
+
+soup = BeautifulSoup(r.content, 'html.parser')
+infectedDiv = soup.findAll("div", {"class": "odh-ads__super-script-item"})[0]
+deathDiv = soup.findAll("div", {"class": "odh-ads__super-script-item"})[1]
+infectedCounties = infectedDiv.text.split(":")[1].strip().split(',')
+deathCounties = deathDiv.text.split("**")[1].strip().split(',')
+
+
+# In[119]:
+
+
+ohioCounties = pd.read_csv('ohio_county_list.csv')
+ohioCounties.columns = ['County', 'Coordinates', 'Population']
+ohioCounties['County'] = ohioCounties['County'].apply(lambda x: x.split()[0].strip())
+
+confirmedCases = dict()
+for county in infectedCounties:
+    info = county.split()
+    info[0] = info[0].strip()
+    info[1] = int(re.match("\((\d+)\)", info[1])[1])
+    confirmedCases[info[0]] = info[1]
+
+confirmedDF = pd.DataFrame.from_dict(confirmedCases, orient='index').reset_index()
+confirmedDF.columns = ["County", "Confirmed"]
+
+deaths = dict()
+for county in deathCounties:
+    info = county.split()
+    info[0] = info[0].strip()
+    info[1] = int(re.match("\((\d+)\)", info[1])[1])
+    deaths[info[0]] = info[1]
+
+deathDF = pd.DataFrame.from_dict(deaths, orient='index').reset_index()
+deathDF.columns = ["County", "Deaths"]
+
+ohioCounties = ohioCounties.join(confirmedDF.set_index('County'), on='County')
+ohioCounties = ohioCounties.join(deathDF.set_index('County'), on='County')
+ohioCounties['Latitude'] = ohioCounties['Coordinates'].apply(lambda x: (re.match('Point\(([^()]+)\)', x)[1].split())[1])
+ohioCounties['Longitude'] = ohioCounties['Coordinates'].apply(lambda x: (re.match('Point\(([^()]+)\)', x)[1].split())[0])
+ohioCounties = ohioCounties.drop(['Coordinates'], axis=1)
+ohioCounties.fillna(0.0)
+
