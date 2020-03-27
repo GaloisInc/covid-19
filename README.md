@@ -13,3 +13,6 @@ and city level data of places where things are going badly, and where they aren'
   * Can the classifier identify trajectory shifts?
   * Basins of attraction, with attractors for the trajectories?  Show interventions
 and their impact?
+
+* Can we project the likely time to hospital resource overrun for a metro area?
+  * Can we suggest when a hospital will be over/under provisioned to allow sharing?
