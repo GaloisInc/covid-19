@@ -48,7 +48,7 @@ def _save(file_out):
     to_delete = []
     def update_row(rowdata):
         rowdata['state'] = rowstate = resolve_state(rowdata['state'])
-        if rowdata['fips'] != rowdata['fips']:
+        if pd.isna(rowdata['fips']):
             # NaN value
 
             if rowstate == 'NY':
@@ -68,9 +68,18 @@ def _save(file_out):
                 # resolve_county has a fix for this.
                 rowcounty = resolve_county(rowdata['county'], state=rowstate)
         else:
-            rowcounty = resolve_county(rowdata['county'], state=rowstate)
-            assert float(rowcounty) == rowdata['fips'], \
-                    f'{rowdata["county"]} / {rowdata["fips"]} / {rowdata}'
+            if False:
+                # Developer debugging -- otherwise, trust the FIPS number provided.
+                rowcounty = resolve_county(rowdata['county'], state=rowstate)
+                assert float(rowcounty) == rowdata['fips'], \
+                        f'{rowdata["county"]} / {rowcounty} / {rowdata}'
+            else:
+                rowcounty = rowdata['fips']
+                if not isinstance(rowcounty, str):
+                    rowcounty = f'{int(rowcounty):05d}'
+
+        assert isinstance(rowcounty, str), rowcounty
+        assert len(rowcounty) == 5, rowcounty
 
         rowdata['county'] = rowcounty
         return rowdata
