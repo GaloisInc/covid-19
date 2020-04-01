@@ -1,6 +1,9 @@
 addfips
+click
+#openpyxl
 pandas
 pendulum
 requests
 us
+xlrd
 

@@ -13,11 +13,100 @@ import us
 _fips = addfips.AddFIPS()
 _fip_state_reverse = {}
 _fip_county_reverse = {}
+# Patches to the 'addfips' library, for counties
+_fip_patches = {
+        # Added everywhere.
+        '_global': {
+            'all': '000',
+            'unknown': '999',
+        },
+
+        'AK': {
+            # There are technically two codes; this is used for ambiguous
+            # entries.
+            'aleutian islands': '010',
+            # These show up in the USDA census data.  They're to be trusted.
+            'anchorage borough': '020',
+            'juneau borough': '110',
+            'kuskokwim division': '160',
+            'prince of wales-outer ketchikan census area': '201',
+            'skagway-yakutat-angoon census area': '231',
+            'skagway-hoonah-angoon census area': '232',
+            'sitka borough': '220',
+            'upper yukon division': '250',
+            'wrangell borough': '275',
+            'wrangell-petersburg census area': '280',
+            'yakutat borough': '282',
+        },
+
+        'IL': {
+            # typo
+            'la salle county': '099',
+        },
+
+        'IN': {
+            'de kalb county': '033',
+            'la porte county': '091',
+        },
+
+        'LA': {
+            # Support a typo
+            'lasalle': '283',
+            # Separate region
+            'lasalle parish': '059',
+        },
+
+        'MD': {
+            # addfips is wrong
+            'baltimore': '005',
+        },
+
+        'MO': {
+            # Shockingly, st. louis city is its own FIPS code.
+            # http://www.msdis.missouri.edu/resources/fips.html
+            'st. louis': '189',
+        },
+
+        'MT': {
+            # Alias
+            'yellowstone national park': '113',
+        },
+
+        'NM': {
+                'debaca county': '011',
+        },
+
+        'PA': {
+                'mc kean county': '083',
+        },
+
+        'VA': {
+            # Add fips is wrong or defaults to city FIPS, but we prefer
+            # county on all of these.
+            'clifton forge city': '560',
+            'fairfax': '059',
+            'franklin': '067',
+            'bedford': '019',
+            'roanoke': '161',
+        },
+}
+
 def _fip_init():
     global _fip_state_reverse, _fip_county_reverse
 
+    # Patch states
+    _fips._states['us'] = '00'
+    _fips._states['um'] = '74'  # US Minor Outlying Islands
+    _fips._counties['00'] = {}
     _fip_state_reverse = {v: k for k, v in _fips._states.items()
             if 'a' <= k[0] <= 'z' and len(k) == 2}
+
+    # Patch counties
+    for state_fips, counties in _fips._counties.items():
+        counties.update(_fip_patches['_global'])
+        name = _fip_state_reverse[state_fips].upper()
+        counties.update(_fip_patches.get(name, {}))
+
     for state_fip in _fip_state_reverse.keys():
         counties = _fips._counties[state_fip]
         _fip_county_reverse[state_fip] = {v: k for k, v in counties.items()}
@@ -121,31 +210,6 @@ def resolve_county(county, state):
 
     FIPS: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
     """
-    if county.lower() == 'unknown':
-        return _fips.get_state_fips(state) + '000'
-
-    # Other loopholes!
-    if county.lower() == 'st. louis' and state == 'MO':
-        # Shockingly, st. louis city is its own FIPS code.
-        # http://www.msdis.missouri.edu/resources/fips.html
-        return '29189'
-    elif county.lower() == 'fairfax' and state == 'VA':
-        # addfips is wrong
-        return '51059'
-    elif county.lower() == 'baltimore' and state == 'MD':
-        # addfips is wrong
-        return '24005'
-    elif county.lower() == 'franklin' and state == 'VA':
-        # addfips defaults to city FIPS; instead, we prefer county.
-        return '51067'
-    elif county.lower() == 'bedford' and state == 'VA':
-        # addfips is just wrong?  A lot of VA...
-        return '51019'
-    elif county.lower() == 'roanoke' and state == 'VA':
-        return '51161'
-    elif county.lower() == 'lasalle' and state == 'LA':
-        county = 'la salle'
-
     r = _fips.get_county_fips(county, state)
     if r is None:
         raise ValueError(f'county={county}, state={state}')
@@ -157,10 +221,7 @@ def resolve_county_name(fips):
     """
     assert len(fips) == 5, repr(fips)
     state = _fip_state_reverse[fips[:2]].upper()
-    if fips[2:] == '000':
-        county = 'unknown'
-    else:
-        county = _fip_county_reverse[fips[:2]][fips[2:]].lower()
+    county = _fip_county_reverse[fips[:2]][fips[2:]].lower()
     return f'{county}, {state}'
 
 
@@ -182,6 +243,9 @@ def resolve_date(date, dayfirst=False, yearfirst=False):
 
 def resolve_state(name):
     """Resolve a state name to uppercase, two-letter code."""
+    if name.lower() == 'us':
+        return 'US'
+
     state = us.states.lookup(name)
     if state is None:
         raise ValueError(name)

@@ -6,7 +6,9 @@ def test_resolve_county():
     assert util.resolve_county_name('41051') == 'multnomah, OR'
 
     # 'Unknown' is a special county name which we allow.
-    assert util.resolve_county('unknown', 'or') == '41000'
+    assert util.resolve_county('unknown', 'or') == '41999'
+    # 'all' is also a special county name
+    assert util.resolve_county('all', 'or') == '41000'
 
 
 def test_resolve_date():

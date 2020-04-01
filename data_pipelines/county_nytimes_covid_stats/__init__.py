@@ -20,7 +20,11 @@ import pendulum
 import requests
 
 URL = 'https://github.com/nytimes/covid-19-data/raw/master/us-counties.csv'
-UPDATED = pendulum.today('America/New_York').add(hours=5)
+_next = pendulum.today('America/New_York')
+if _next.hour < 5:
+    _next = _next.add(days=-1)
+_next = _next.add(hours=5)
+UPDATED = _next
 
 
 ## URL updating code.
