@@ -113,7 +113,7 @@ def _fip_init():
 _fip_init()
 
 
-def cmd_basic_cached(save_fn, load_fn, last_update):
+def cmd_basic_cached(save_fn, load_fn, last_update, cache_name_fn=None):
     """A means of getting the default `get()` and `update()` interface for
     datasets.  Handles caching automatically in get(), and handles redirecting
     file pointers for save/load.
@@ -127,6 +127,8 @@ def cmd_basic_cached(save_fn, load_fn, last_update):
         last_update: An e.g. `pendulum.datetime` representing the last time
                 this data source was updated.  In other words, if the cached
                 data is older than timestamp, then the cache will be updated.
+        cache_name_fn: Default None.  If specified, use the given function
+                object instead of `save_fn` to generate the cache name.
 
     Return:
         `get_fn, update_fn`: A tuple with a getter and a force-updater.
@@ -137,7 +139,10 @@ def cmd_basic_cached(save_fn, load_fn, last_update):
                         even out-of-date data will be loaded.
     """
 
-    cache_name = save_fn.__module__ + '.' + save_fn.__name__
+    if cache_name_fn is None:
+        cache_name_fn = save_fn
+
+    cache_name = cache_name_fn.__module__ + '.' + cache_name_fn.__name__
     # I suppose a hash would be more obtuse.
     #cache_name += hashlib.sha256(pdf_dir.encode('utf-8')).hexdigest()
     cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -203,6 +208,26 @@ def cmd_basic_cached(save_fn, load_fn, last_update):
     return get, update
 
 
+def cmd_url_cached(url_fn, last_update):
+    """Special case for caching a URL.  We don't want to hammer URLs,
+    particularly while testing, so best to cache URLs separately from
+    our parsed datasets.
+
+    Arguments:
+        url_fn: Function which takes no parameters and returns the URL
+                to load.
+
+        last_update: The last time this resource was updated.
+    """
+    def save(file_out):
+        data = requests.get(url_fn()).content
+        file_out.write(data)
+    def load(file_in):
+        return file_in.read()
+    return cmd_basic_cached(save, load, last_update=last_update,
+            cache_name_fn=url_fn)
+
+
 def date_latest_daily(tz, hour, minute=0):
     """Returns the most recent (before current moment) instance of hour:minute
     on a day.
@@ -211,7 +236,6 @@ def date_latest_daily(tz, hour, minute=0):
     current = day.replace(hour=hour, minute=minute, second=0, microsecond=0)
     if day < current:
         current = current.add(days=-1)
-    current = current.add(hours=hour, minutes=minute)
     return current
 
 
@@ -219,7 +243,7 @@ def date_latest_monthly(tz, day_of_month=1, hour=0, minute=0):
     """Returns the most recent (before current moment) instance of the given
     day_of_month.
     """
-    day = pendulum.now('utc')
+    day = pendulum.now(tz)
     current = day.replace(day=day_of_month, hour=hour, minute=minute,
             second=0, microsecond=0)
     if day < current:
@@ -249,7 +273,7 @@ def resolve_county_name(fips):
     return f'{county}, {state}'
 
 
-def resolve_date(date, dayfirst=False, yearfirst=False):
+def resolve_date(date, dayfirst=False, yearfirst=False, nodashes=False):
     """Resolve a date into a consistent YYYY-MM-DD format.
 
     Defaults to US MM-DD-YY format.
@@ -260,7 +284,19 @@ def resolve_date(date, dayfirst=False, yearfirst=False):
 
         yearfirst: For data sources with six digits, specify this if the
                 format is YY-MM-DD.
+
+        nodashes: Some data sources don't use dashes.  This puts them in
+                based on the value of `dayfirst` and `yearfirst`.
     """
+
+    if nodashes:
+        assert len(date) == 8, date
+        if yearfirst:
+            assert not dayfirst
+            date = f'{date[:4]}-{date[4:6]}-{date[6:]}'
+        else:
+            date = f'{date[:2]}-{date[2:4]}-{date[4:]}'
+
     d = dateutil_parser.parse(date, dayfirst=dayfirst, yearfirst=yearfirst)
     return d.strftime('%Y-%m-%d')
 

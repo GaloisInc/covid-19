@@ -12,30 +12,21 @@ Fields include:
 Seems to be updated daily by 8am PST.
 """
 
-from ..util import cmd_basic_cached, date_latest_daily, resolve_state, resolve_county
+from ..util import (cmd_basic_cached, cmd_url_cached, date_latest_daily,
+        resolve_state, resolve_county)
 
 import io
 import pandas as pd
-import requests
 
 URL = 'https://github.com/nytimes/covid-19-data/raw/master/us-counties.csv'
 UPDATED = date_latest_daily('America/New_York', hour=5)
 
 ## URL updating code.
-def _save_url(file_out):
-    """We don't want to hammer GitHub when we're testing.  So, also wrap
-    the web request in a cacher.
-    """
-    data = requests.get(URL).text
-    file_out.write(data.encode('utf-8'))
-
-
-def _load_url(file_in):
-    return file_in.read().decode('utf-8')
-
-
-_get_url_data, _ = cmd_basic_cached(_save_url, _load_url,
-        last_update=UPDATED.add(seconds=-1))
+# We don't want to hammer URLs while we're testing, so wrap the web request
+# in a separate cache.
+def _url():
+    return URL
+_get_url_data, _ = cmd_url_cached(_url, last_update=UPDATED.add(seconds=-1))
 
 
 ## NYTimes data updating code.
@@ -43,7 +34,7 @@ def _save(file_out):
     """Update the dataset.  Should return some format which is saveable
     directly to file.
     """
-    data = _get_url_data()
+    data = _get_url_data().decode('utf-8')
     df = pd.read_csv(io.StringIO(data))
     to_delete = []
     def update_row(rowdata):
