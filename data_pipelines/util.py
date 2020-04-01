@@ -203,6 +203,30 @@ def cmd_basic_cached(save_fn, load_fn, last_update):
     return get, update
 
 
+def date_latest_daily(tz, hour, minute=0):
+    """Returns the most recent (before current moment) instance of hour:minute
+    on a day.
+    """
+    day = pendulum.now(tz)
+    current = day.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if day < current:
+        current = current.add(days=-1)
+    current = current.add(hours=hour, minutes=minute)
+    return current
+
+
+def date_latest_monthly(tz, day_of_month=1, hour=0, minute=0):
+    """Returns the most recent (before current moment) instance of the given
+    day_of_month.
+    """
+    day = pendulum.now('utc')
+    current = day.replace(day=day_of_month, hour=hour, minute=minute,
+            second=0, microsecond=0)
+    if day < current:
+        current = current.add(months=-1)
+    return current
+
+
 def resolve_county(county, state):
     """Resolve a county name to its unique FIPS number.
 
@@ -251,4 +275,13 @@ def resolve_state(name):
         raise ValueError(name)
 
     return state.abbr
+
+
+def resolve_state_name(fips):
+    """Resolve a FIPS code to the state in which it resides.
+    """
+    if fips is None:
+        return "MISSING"
+    state = _fip_state_reverse[fips[:2]].upper()
+    return state
 

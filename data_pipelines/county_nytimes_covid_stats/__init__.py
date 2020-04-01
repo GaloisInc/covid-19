@@ -12,20 +12,14 @@ Fields include:
 Seems to be updated daily by 8am PST.
 """
 
-from ..util import cmd_basic_cached, resolve_state, resolve_county
+from ..util import cmd_basic_cached, date_latest_daily, resolve_state, resolve_county
 
 import io
 import pandas as pd
-import pendulum
 import requests
 
 URL = 'https://github.com/nytimes/covid-19-data/raw/master/us-counties.csv'
-_next = pendulum.today('America/New_York')
-if _next.hour < 5:
-    _next = _next.add(days=-1)
-_next = _next.add(hours=5)
-UPDATED = _next
-
+UPDATED = date_latest_daily('America/New_York', hour=5)
 
 ## URL updating code.
 def _save_url(file_out):

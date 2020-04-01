@@ -108,7 +108,7 @@ Data types:
 
 """
 
-from ..util import cmd_basic_cached, resolve_state, resolve_county
+from ..util import cmd_basic_cached, date_latest_monthly, resolve_state, resolve_county
 
 import io
 import pandas as pd
@@ -125,11 +125,7 @@ URLS = {
         'population': 'https://www.ers.usda.gov/webdocs/DataFiles/48747/PopulationEstimates.xls',
 }
 # Seems to update by the 10th of each month.
-_next = pendulum.today('utc')
-if _next.day < 10:
-    _next = _next.add(months=-1)
-_next = _next.add(days=10 - _next.day)
-UPDATED = _next
+UPDATED = date_latest_monthly('utc', 10)
 
 def _save_urls(file_out):
     data = {}
