@@ -15,6 +15,25 @@
             :item-text="[1]"
             :item-value="[0]"
         )
+        v-tooltip(bottom)
+          template(v-slot:activator="{on}")
+            v-icon(color="orange" v-on="on" @click="helpShow = !helpShow") mdi-information-outline
+          span Click for additional information and data sources.
+        v-dialog(v-model="helpShow" max-width="40em")
+          v-card
+            v-card-title
+              v-icon mdi-information-outline
+              span(style="padding-left: 0.25rem") Information
+            v-card-text
+              p The information for this dashboard comes from several sources, including:
+                ul
+                  li #[a(href="https://github.com/nytimes/covid-19-data") the New York Times' GitHub Repository],
+                  li #[a(href="https://github.com/descarteslabs/DL-COVID-19") Descartes Labs' GitHub Repository],
+                  li #[a(href="https://www.ers.usda.gov/data-products/county-level-data-sets/download-data/") the USDA's County-Level Datasets],
+                  li and #[a(href="https://covidtracking.com/api") CovidTracking.com's API].
+              p #[a(href="d/data.xlsx") Download all data as a single .xlsx file]
+            v-card-actions
+              v-btn(color="primary" @click="helpShow = !helpShow") OK
 </template>
 
 <style lang="scss">  
@@ -35,6 +54,10 @@
       border: solid 8px map-get($orange, base);
       border-top: 0;
       border-bottom: 0;
+
+      // Show info beside search
+      display: flex;
+      align-items: center;
     }
   }
 
@@ -71,6 +94,7 @@ export default Vue.extend({
     return {
       chart: null as chartjs | null,
       chart2: null as chartjs | null,
+      helpShow: false,
       regionsAvailable: new Array<[string, string]>(),
     };
   },

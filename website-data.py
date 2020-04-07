@@ -3,10 +3,13 @@
 import data_pipelines.util
 
 import click
+import contextlib
+import importlib
 import json
 import os
 import pandas as pd
 import shutil
+import sys
 
 TARGET = 'website/public/d'
 
@@ -18,6 +21,7 @@ def main():
     _clean_target()
     _county_list()
     _county_data()
+    _data_export()
 
 
 def _clean_target():
@@ -137,6 +141,68 @@ def _county_list():
     entries.sort(key=lambda x: x[0].lower())
     with open(os.path.join(TARGET, 'counties.tsv'), 'w') as f:
         f.write('\n'.join(['\t'.join(v) for v in entries]))
+
+
+def _data_export():
+    """Generates d/data.xlsx.
+    """
+    out_path = os.path.join(TARGET, 'data.xlsx')
+    indent = 0
+    def dbg(msg):
+        print(' ' * indent + msg, file=sys.stderr)
+    @contextlib.contextmanager
+    def dbg_level(name):
+        nonlocal indent
+        dbg(f'{name}:')
+        indent += 2
+        yield
+        indent -= 2
+
+    with pd.ExcelWriter(out_path) as writer, \
+            dbg_level(f'Building {out_path}...'):
+
+        sheets = []  # (name, df)
+        provenance_info = []  # [name, source]
+
+        for f in os.listdir('data_pipelines'):
+            if f.startswith('kr_'):
+                # TODO FIXME
+                continue
+            path = os.path.join('data_pipelines', f)
+            if f in ['test']:
+                continue
+            if not os.path.isdir(path):
+                continue
+
+            if not os.path.lexists(os.path.join(path, '__init__.py')):
+                continue
+
+            with dbg_level(f'Pulling {f}'):
+                mod = importlib.import_module(f'data_pipelines.{f}')
+
+                dfs = mod.get()
+                dfs_out = []  # (name, source, df)
+                if isinstance(dfs, pd.DataFrame):
+                    dfs_out = [(f, getattr(mod, 'URL', None), dfs)]
+                elif isinstance(dfs, dict):
+                    for k, v in dfs.items():
+                        dfs_out.append((
+                                f'{f}.{k}',
+                                getattr(mod, 'URLS', {}).get(k),
+                                v))
+                else:
+                    raise NotImplementedError(dfs)
+
+                for df_name, df_source, df in dfs_out:
+                    provenance_info.append((df_name, df_source))
+                    sheets.append((df_name, df))
+
+        # Build provenance info, write sheets.
+        sheets.insert(0, ('Provenance', pd.DataFrame(provenance_info,
+                columns=['Dataset', 'Source'])))
+        for s_name, s_df in sheets:
+            s_df.to_excel(writer, sheet_name=s_name, index=False)
+
 
 
 if __name__ == '__main__':
