@@ -1,5 +1,7 @@
 # website
 
+To deploy to `gh-pages`, checkout `master` and run `deploy.py` in this folder.
+
 ## Project setup
 ```
 npm install
@@ -8,6 +10,8 @@ npm install
 ### Compiles and hot-reloads for development
 ```
 npm run serve
+# OR
+npm start
 ```
 
 ### Compiles and minifies for production
@@ -32,3 +36,4 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+

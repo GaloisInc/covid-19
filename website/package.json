@@ -1,20 +1,25 @@
 {
-  "name": "website",
+  "name": "galois-covid-19",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.19.2",
+    "chart.js": "^2.9.3",
+    "chartjs-chart-geo": "^1.1.4",
     "vue": "^2.6.11",
     "vue-router": "^3.1.6",
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
+    "@types/chart.js": "^2.9.18",
     "@types/jest": "^24.0.19",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
@@ -51,6 +56,7 @@
       "ecmaVersion": 2020
     },
     "rules": {
+      "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-explicit-any": "off"
     },
     "overrides": [
