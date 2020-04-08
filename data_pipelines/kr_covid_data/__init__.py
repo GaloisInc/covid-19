@@ -50,10 +50,13 @@ def _save(file_out):
     soup = BeautifulSoup(_get_url_data().decode('utf-8'), 'lxml')
     all_data = soup.find_all('script')
 
+    for data in all_data:
+        if 'chartForDomestic' in str(data):
+            all_data = data
+
     # pull out the city level data
-    city_data = \
-    all_data[8].text.split('chartForDomestic":')[1].split(',"statByKrLocation')[
-        0]
+    city_data = all_data.text.split('chartForDomestic":')[1]
+    city_data = city_data.split(',"statByKrLocation')[0]
     city_data = ast.literal_eval(city_data)
 
     # relabel with English names
@@ -65,11 +68,11 @@ def _save(file_out):
     city_data = {eng: city_data[kor] for kor, eng in labels}
 
     # pull out the testing data
-    testing = all_data[8].text.split('krTesting":')[1].split(',"age')[0]
+    testing = all_data.text.split('krTesting":')[1].split(',"age')[0]
     testing = ast.literal_eval(testing)
 
     # pull out the aggregated nation wide data
-    kr_total = all_data[8].text.split('{"KR":')[1].split(',"global')[0]
+    kr_total = all_data.text.split('{"KR":')[1].split(',"global')[0]
     kr_total = ast.literal_eval(kr_total)
 
     kr_data = {'cities': city_data, 'total': kr_total, 'testing': testing}
