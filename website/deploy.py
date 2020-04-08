@@ -14,7 +14,7 @@ def main():
         raise ValueError(f"Cannot deploy from `{branch_last}`; change to `master`.")
 
     print('Building website...')
-    subprocess.check_call(['website-data.py'],
+    subprocess.check_call(['./website-data.py'],
             cwd=os.path.dirname(_dir))
     subprocess.check_call(['npm', 'run', 'build'], cwd=_dir)
 
