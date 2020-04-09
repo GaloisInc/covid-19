@@ -205,8 +205,14 @@ export default Vue.extend({
       const resp = await axios.get(url, {responseType: 'json'});
       const county = resp.data[fips];
 
+      for (const c of Object.keys(county)) {
+        const v = county[c];
+        if (!(v instanceof Array)) continue;
+        county[c] = v.map(x => x === null ? NaN : x);
+      }
+
       let n = county.state_test_positive.length;
-      while (county.state_test_positive[n] == null) {
+      while (isNaN(county.state_test_positive[n])) {
         n -= 1;
       }
       const testsStateMax = county.state_test_positive[n] + county.state_test_negative[n];
