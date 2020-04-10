@@ -32,4 +32,4 @@ jobs:
         pip install -r requirements.txt
 
     - name: update website data
-      run: ./website.py
+      run: ./website-data.py
