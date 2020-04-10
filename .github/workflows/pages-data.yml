@@ -5,6 +5,8 @@ name: GitHub Pages Data Updater
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
+  repository_dispatch:
+    type: update-data
   schedule:
     - cron: '30 2 * * *'
 
