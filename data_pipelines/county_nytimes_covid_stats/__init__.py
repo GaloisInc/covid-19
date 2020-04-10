@@ -42,7 +42,10 @@ def _save(file_out):
         if pd.isna(rowdata['fips']):
             # NaN value
 
-            if rowstate == 'NY':
+            if rowdata['county'].lower() == 'unknown':
+                # resolve_county has a fix for this.
+                rowcounty = resolve_county(rowdata['county'], state=rowstate)
+            elif rowstate == 'NY':
                 # The NYTimes dataset collapsed all New York City counties into a
                 # single county, the New York county.
                 #
@@ -55,9 +58,7 @@ def _save(file_out):
                 to_delete.append(rowdata.name)
                 return rowdata
             else:
-                assert rowdata['county'] == 'Unknown', rowdata
-                # resolve_county has a fix for this.
-                rowcounty = resolve_county(rowdata['county'], state=rowstate)
+                raise NotImplementedError(rowdata)
         else:
             if False:
                 # Developer debugging -- otherwise, trust the FIPS number provided.

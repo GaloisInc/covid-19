@@ -12,6 +12,7 @@ import us
 
 _fips = addfips.AddFIPS()
 _fip_state_reverse = {}
+_fip_state_full_reverse = {}
 _fip_county_reverse = {}
 # Patches to the 'addfips' library, for counties
 _fip_patches = {
@@ -92,7 +93,7 @@ _fip_patches = {
 }
 
 def _fip_init():
-    global _fip_state_reverse, _fip_county_reverse
+    global _fip_state_reverse, _fip_state_full_reverse, _fip_county_reverse
 
     # Patch states
     _fips._states['us'] = '00'
@@ -100,6 +101,10 @@ def _fip_init():
     _fips._counties['00'] = {}
     _fip_state_reverse = {v: k for k, v in _fips._states.items()
             if 'a' <= k[0] <= 'z' and len(k) == 2}
+    _fip_state_full_reverse = {v: k for k, v in _fips._states.items()
+            if len(k) != 2 and not ('0' <= k[0] <= '9')}
+    _fip_state_full_reverse['00'] = 'United States'
+    _fip_state_full_reverse['74'] = 'United States Minor Outlying Islands'
 
     # Patch counties
     for state_fips, counties in _fips._counties.items():
@@ -111,6 +116,8 @@ def _fip_init():
         counties = _fips._counties[state_fip]
         _fip_county_reverse[state_fip] = {v: k for k, v in counties.items()}
 _fip_init()
+# Public assignment
+fips = _fips
 
 
 def cmd_basic_cached(save_fn, load_fn, last_update, cache_name_fn=None):
@@ -273,6 +280,15 @@ def resolve_county_name(fips):
     return f'{county}, {state}'
 
 
+def resolve_county_name_full(fips):
+    """Go from a fips code to a "county, state full name" label.
+    """
+    assert len(fips) == 5, repr(fips)
+    state = _fip_state_full_reverse[fips[:2]]
+    county = _fip_county_reverse[fips[:2]][fips[2:]].lower()
+    return f'{county}, {state}'.title()
+
+
 def resolve_date(date, dayfirst=False, yearfirst=False, nodashes=False):
     """Resolve a date into a consistent YYYY-MM-DD format.
 
@@ -319,5 +335,14 @@ def resolve_state_name(fips):
     if fips is None:
         return "MISSING"
     state = _fip_state_reverse[fips[:2]].upper()
+    return state
+
+
+def resolve_state_name_full(fips):
+    """Resolve a FIPS code to the full state name in which it resides.
+    """
+    if fips is None:
+        return "MISSING"
+    state = _fip_state_reverse_full[fips[:2]].lower()
     return state
 

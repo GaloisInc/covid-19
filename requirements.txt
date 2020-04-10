@@ -1,6 +1,8 @@
 addfips
+beautifulsoup4
 click
-#openpyxl
+lxml
+openpyxl
 pandas
 pendulum
 requests
