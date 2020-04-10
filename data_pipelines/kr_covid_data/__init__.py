@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import pickle
 import ast
+import pandas as pd
 from ..util import cmd_url_cached, cmd_basic_cached, date_latest_daily
 
 """
@@ -46,6 +47,13 @@ _get_url_data, _ = cmd_url_cached(_url, last_update=UPDATED.add(seconds=-1))
 
 
 def _save(file_out):
+    """
+    Saves dict with 3 fields (cities, total, testing):
+        - cities: dict with pandas dataframe for each city
+        - total: pandas dataframe for the aggregate nation level data
+        - testing: pandas dataframe for the aggregate nation level testing data
+
+    """
     # scrape website
     soup = BeautifulSoup(_get_url_data().decode('utf-8'), 'lxml')
     all_data = soup.find_all('script')
@@ -69,18 +77,34 @@ def _save(file_out):
               'Jeonbuk', 'Jeonnam', 'Gyeongbuk', 'Gyeongnam', 'Jeju',
               'Quarantine']
     labels = list(zip(list(city_data.keys())[1:], labels))
-    city_data = {eng: city_data[kor] for kor, eng in labels}
+    city_data = {eng: pd.DataFrame(city_data[kor]) for kor, eng in labels}
+
+    # convert str dates to datetime
+    for k in city_data.keys():
+        temp = pd.DataFrame(city_data[k])
+        temp['date'] = pd.to_datetime(
+            temp['date'].apply(lambda x: (x + '.2020').replace('.', '/')))
+        city_data[k] = temp
 
     # pull out the testing data
     testing = data_str.split('krTesting":')[1].split(',"age')[0]
     testing = ast.literal_eval(testing)
+    testing = pd.DataFrame(testing)
+    testing['date'] = pd.to_datetime(
+        testing['date'].apply(lambda x: (x + '.2020').replace('.', '/')))
 
     # pull out the aggregated nation wide data
     kr_total = data_str.split('{"KR":')[1].split(',"global')[0]
     kr_total = ast.literal_eval(kr_total)
+    kr_total = pd.DataFrame(kr_total)
+    # convert str dates to datetime
+    kr_total['date'] = pd.to_datetime(
+        kr_total['date'].apply(lambda x: (x + '.2020').replace('.', '/')))
 
     kr_data = {'cities': city_data, 'total': kr_total, 'testing': testing}
 
+    # convert from dict to dataframes
+    # save dict of dataframes
     pickle.dump(kr_data, file_out)
 
 
