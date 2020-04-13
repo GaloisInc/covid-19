@@ -19,17 +19,30 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - name: Checkout 🛎️
+      uses: actions/checkout@v2
 
-    - name: Set up Python
+    - name: Set up Python 🐍
       uses: actions/setup-python@v1
       with:
         python-version: '3.x'
 
-    - name: Install dependencies
+    - name: Install Python dependencies 🐍
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    
+    - name: Install Node dependencies ☕📜
+      run: |
+        npm install --no-save
+        npm run build
 
-    - name: update pages
-      run: ./website/deploy.py --yes-to-all
+    - name: Update website data ℹ
+      run: ./website.py
+
+    - name: Deploy GitHub Pages 🚀
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: . # since we publish the entire project
