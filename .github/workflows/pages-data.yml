@@ -34,6 +34,7 @@ jobs:
     
     - name: Install Node dependencies ☕📜
       run: |
+        cd website
         npm install --no-save
         npm run build
 
