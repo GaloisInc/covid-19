@@ -42,7 +42,7 @@ jobs:
 
     - name: Deploy GitHub Pages 🚀
       uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: . # since we publish the entire project
+      with:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: . # since we publish the entire project
