@@ -46,4 +46,4 @@ jobs:
       with:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         BRANCH: gh-pages
-        FOLDER: . # since we publish the entire project
+        FOLDER: website/dist
