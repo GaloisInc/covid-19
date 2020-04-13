@@ -46,9 +46,13 @@ def _county_data():
     import data_pipelines.county_usda_census as usda_census
     import data_pipelines.county_descarteslabs_mobility as mobility
 
+    print('Fetching Covid stats...')
     cs = covid_stats.get()
+    print('Fetching testing stats...')
     st = testing.get()
+    print('Fetching census data...')
     census = usda_census.get()
+    print('Fetching mobility data...')
     m = mobility.get()
 
     # Join county information
@@ -152,7 +156,7 @@ def _data_export():
     """Generates d/data.xlsx.
     """
     print('Generate Excel spreadsheet of data...')
-    
+
     out_path = os.path.join(TARGET, 'data.xlsx')
     indent = 0
     def dbg(msg):
