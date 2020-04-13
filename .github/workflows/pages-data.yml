@@ -39,7 +39,7 @@ jobs:
         npm run build
 
     - name: Update website data ℹ
-      run: ./website.py
+      run: ./website-data.py
 
     - name: Deploy GitHub Pages 🚀
       uses: JamesIves/github-pages-deploy-action@releases/v3
