@@ -27,6 +27,7 @@ def main():
 def _clean_target():
     """Reset target directory.
     """
+    print('Resetting target directory if present...')
     if os.path.lexists(TARGET):
         shutil.rmtree(TARGET)
     os.makedirs(TARGET)
@@ -38,6 +39,8 @@ def _clean_target():
 def _county_data():
     """Build per-county data.
     """
+    print('Building per-county data...')
+
     import data_pipelines.county_nytimes_covid_stats as covid_stats
     import data_pipelines.state_covidtracking_com_covid_testing as testing
     import data_pipelines.county_usda_census as usda_census
@@ -124,6 +127,8 @@ def _county_data():
 def _county_list():
     """Builds a list of all available counties.  Used for search.
     """
+    print('Building a list of all available counties for use by search...')
+
     fips = data_pipelines.util.fips
 
     entries = {}
@@ -146,6 +151,8 @@ def _county_list():
 def _data_export():
     """Generates d/data.xlsx.
     """
+    print('Generate Excel spreadsheet of data...')
+    
     out_path = os.path.join(TARGET, 'data.xlsx')
     indent = 0
     def dbg(msg):
