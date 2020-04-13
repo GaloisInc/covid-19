@@ -20,7 +20,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-      
+
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
@@ -31,5 +31,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: update website data
-      run: ./website-data.py
+    - name: update pages
+      run: ./website/deploy.py --yes-to-all

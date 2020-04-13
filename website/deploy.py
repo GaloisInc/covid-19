@@ -8,7 +8,8 @@ import subprocess
 _dir = os.path.dirname(os.path.abspath(__file__))
 
 @click.command()
-def main():
+@click.option('--yes-to-all', is_flag=True, default=False, help='just say yes to all questions')
+def main(yes_to_all):
     branch_last = _check_committed()
     if branch_last != 'master':
         raise ValueError(f"Cannot deploy from `{branch_last}`; change to `master`.")
@@ -19,7 +20,8 @@ def main():
     subprocess.check_call(['npm', 'run', 'build'], cwd=_dir)
 
     # Get user confirmation before continuing.
-    _check_proceed('Continuing will force-replace the `gh-pages` branch '
+    if not yes_to_all: 
+        _check_proceed('Continuing will force-replace the `gh-pages` branch '
             'locally.')
 
     # Paranoid, but double check we're still on master and git state is clean.
@@ -66,7 +68,8 @@ def main():
     subprocess.check_call(['git', 'ls-tree', '--name-only', '-r', 'gh-pages'],
             cwd=git_dir)
 
-    _check_proceed('Does the above look correct?  Continuing will push '
+    if not yes_to_all:
+        _check_proceed('Does the above look correct?  Continuing will push '
             'local `gh-pages` to remote.')
 
     # Don't hide output, hence no git_cmd
@@ -112,5 +115,6 @@ def _check_proceed(msg):
 
 
 if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
     main()
 
