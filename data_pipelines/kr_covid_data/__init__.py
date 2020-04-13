@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import pickle
 import ast
+import pandas as pd
+import re
 from ..util import cmd_url_cached, cmd_basic_cached, date_latest_daily
 
 """
@@ -15,7 +17,7 @@ unsure of demand). Data includes the following fields:
 
 city and total country level data:
  - date
- - quarantine
+ - active
  - confirmed_acc
  - death_acc
  - released_acc
@@ -46,41 +48,60 @@ _get_url_data, _ = cmd_url_cached(_url, last_update=UPDATED.add(seconds=-1))
 
 
 def _save(file_out):
+    """
+    Saves dict with 3 fields (cities, total, testing):
+        - cities: dict with pandas dataframe for each city
+        - total: pandas dataframe for the aggregate nation level data
+        - testing: pandas dataframe for the aggregate nation level testing data
+
+    """
     # scrape website
     soup = BeautifulSoup(_get_url_data().decode('utf-8'), 'lxml')
     all_data = soup.find_all('script')
 
-    search_str = 'chartForDomestic":'
+    data_str = str(all_data)
 
-    for data in all_data:
-        # save str version (so that I don't redo this every time)
-        data_str = str(data)
-        if search_str in data_str:
-            break
+    labels = {'서울': 'Seoul', '부산': 'Busan', '대구': 'Daegu', '인천': 'Incheon', '광주': 'Gwangju', '대전': 'Daejeon',
+              '울산': 'Ulsan', '세종': 'Sejong', '경기': 'Gyeonggi-do', '강원': 'Gangwon-do', '충북': 'Chungcheongbuk-do',
+              '충남': 'Chungcheongnam-do', '전북': 'Jeollabuk-do', '전남': 'Jeollanam-do', '경북': 'Gyeongsangbuk-do',
+              '경남': 'Gyeongsangnam-do', '제주': 'Jeju-do', '검역': 'Quarantine'}
 
-    # pull out the city level data
-    city_data = data_str.split(search_str)[1]
-    city_data = city_data.split(',"statByKrLocation')[0]
-    city_data = ast.literal_eval(city_data)
+    # search for each city/province ("광주":{...})
+    regions = dict()
+    for k, v in labels.items():
+        pattern = '[\\\'\\\"]{}[\\\'\\\"]:(.*?)]}}'.format(k)
+        string = re.search(pattern, data_str)
+        if string:
+            regions[v] = ast.literal_eval(string.group(1) + ']}')
 
-    # relabel with English names
-    labels = ['Seoul', 'Busan', 'Daegu', 'Incheon', 'Gwangju', 'Daejeon',
-              'Ulsan', 'Sejong', 'Gyeonggi', 'Gangwon', 'Chungbuk', 'Chungnam',
-              'Jeonbuk', 'Jeonnam', 'Gyeongbuk', 'Gyeongnam', 'Jeju',
-              'Quarantine']
-    labels = list(zip(list(city_data.keys())[1:], labels))
-    city_data = {eng: city_data[kor] for kor, eng in labels}
+    # turn into pandas DataFrame and merge each city on date
+    all_regions = False
+    for k, v in regions.items():
+        temp = pd.DataFrame(v)
+        temp['date'] = pd.to_datetime(temp['date'].apply(lambda x: (x + '.2020').replace('.', '/'))).dt.date
+        temp = temp.set_index('date')
+        if all_regions is False:
+            all_regions = temp.add_suffix('_{}'.format(k))
+        else:
+            all_regions = all_regions.join(temp.add_suffix('_{}'.format(k)))
 
-    # pull out the testing data
-    testing = data_str.split('krTesting":')[1].split(',"age')[0]
-    testing = ast.literal_eval(testing)
+    # kr total ("KR":{...})
+    total = re.search('[\'\"]KR[\'\"]:(.*?)]}', data_str)
+    total = ast.literal_eval(total.group(1) + ']}')
+    total = pd.DataFrame(total)
+    total['date'] = pd.to_datetime(total['date'].apply(lambda x: (x + '.2020').replace('.', '/'))).dt.date
+    total = total.set_index('date')
 
-    # pull out the aggregated nation wide data
-    kr_total = data_str.split('{"KR":')[1].split(',"global')[0]
-    kr_total = ast.literal_eval(kr_total)
+    # testing ("KR":{"chartTesting":{...})
+    testing = re.search('KR[\'\"]:{[\'\"]chartTesting[\'\"]:(.*?)]}', data_str)
+    testing = ast.literal_eval(testing.group(1) + ']}')
+    testing = pd.DataFrame(testing)
+    testing['date'] = pd.to_datetime(testing['date'].apply(lambda x: (x + '.2020').replace('.', '/'))).dt.date
+    testing = testing.set_index('date')
 
-    kr_data = {'cities': city_data, 'total': kr_total, 'testing': testing}
+    kr_data = {'regions': all_regions, 'total': total, 'testing': testing}
 
+    # save dict of dataframes
     pickle.dump(kr_data, file_out)
 
 
