@@ -6,7 +6,7 @@ name: GitHub Pages Data Updater
 # events but only for the master branch
 on:
   repository_dispatch:
-    type: update-data
+    type: update-data-test
   schedule:
     - cron: '30 2 * * *'
 
@@ -33,5 +33,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: update website data
+    - name: update pages
       run: ./website/deploy.py --yes-to-all
