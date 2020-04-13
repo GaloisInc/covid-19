@@ -17,7 +17,7 @@ def main(yes_to_all):
     print('Building website...')
     subprocess.check_call(['./website-data.py'],
             cwd=os.path.dirname(_dir))
-    subprocess.check_call(['npm', 'install', '--no-save'], cwd=_dir)
+    subprocess.check_call(['npm', 'install', '--no-save', '--production'], cwd=_dir)
     subprocess.check_call(['npm', 'run', 'build'], cwd=_dir)
 
     # Get user confirmation before continuing.
