@@ -33,13 +33,10 @@ jobs:
         pip install -r requirements.txt
 
     - name: Configure GitHub 🐙
-      env:
-        ORIGIN: https://x-access-token:${{secrets.GITHUB_TOKEN}}/${{env.GITHUB_REPOSITORY}}
       run: |
-        echo $ORIGIN
         git config --global user.email "github-page-builder-which-is-not-real@galois.com"
         git config --global user.name "GitHub Page Builder"
-        git remote add gh-origin $ORIGIN
+        git remote add gh-origin "https://x-access-token:${{secrets.GITHUB_TOKEN}}/${{env.GITHUB_REPOSITORY}}"
     
     - name: Deploy GitHub Pages 🚀
       run: ./website/deploy.py --yes-to-all
