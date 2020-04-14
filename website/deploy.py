@@ -74,7 +74,6 @@ def main(yes_to_all):
             'local `gh-pages` to remote.')
 
     # Don't hide output, hence no git_cmd
-    print(f'TOKEN: {os.getenv("TOKEN")}')
     subprocess.check_call(['git', 'push', 'origin', '--force',
             'gh-pages:gh-pages'])
 
