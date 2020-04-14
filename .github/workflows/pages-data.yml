@@ -34,10 +34,10 @@ jobs:
 
     - name: Configure GitHub
       run: |
+        echo "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
         git config --global user.email "github-page-builder-which-is-not-real@galois.com"
         git config --global user.name "GitHub Page Builder"
-        git remote add gh-origin "https://x-access-token:${github_token}@github.com/${github_repository}.git"
-        echo "https://x-access-token:${github_token}@github.com/${github_repository}.git"
+        git remote add gh-origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
     
     # - name: Deploy GitHub Pages 🚀
     #   run: ./website/deploy.py
