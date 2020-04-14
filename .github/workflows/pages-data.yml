@@ -39,8 +39,8 @@ jobs:
         git config --global user.name "GitHub Page Builder"
         git remote add gh-origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
     
-    # - name: Deploy GitHub Pages 🚀
-    #   run: ./website/deploy.py
+    - name: Deploy GitHub Pages 🚀
+      run: ./website/deploy.py
     
     # - name: Install Node dependencies ☕📜
     #   run: |
