@@ -38,7 +38,7 @@ jobs:
       run: |
         git config user.email "github-page-builder-which-is-not-real@galois.com"
         git config user.name "GitHub Page Builder"
-        git remote user.password $TOKEN
+        git config user.password $TOKEN
     
     - name: Deploy GitHub Pages 🚀
       run: ./website/deploy.py --yes-to-all
