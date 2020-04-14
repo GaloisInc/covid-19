@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# Workflow for updating GitHub pages (and the underlying data)
 
 name: GitHub Pages Data Updater
 
@@ -42,19 +42,3 @@ jobs:
     
     - name: Deploy GitHub Pages 🚀
       run: ./website/deploy.py --yes-to-all
-    
-    # - name: Install Node dependencies ☕📜
-    #   run: |
-    #     cd website
-    #     npm install --no-save
-    #     npm run build
-
-    # - name: Update website data ℹ
-    #   run: ./website-data.py
-
-    # - name: Deploy GitHub Pages 🚀
-    #   uses: JamesIves/github-pages-deploy-action@releases/v3
-    #   with:
-    #     ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-    #     BRANCH: gh-pages
-    #     FOLDER: website/dist
