@@ -1,39 +1,12 @@
 <template lang="pug">
-  div(style="position: relative")
-    .chartjs-fullscreen
-      div(style="position: absolute; left: 0; top: 0; bottom: 0; width: 50%")
-        canvas(ref="mychart")
-      div(style="position: absolute; left: 50%; top: 0; bottom: 0; width: 50%")
-        canvas(ref="mychart2")
-    .banner
-      .banner-content
-        v-autocomplete(
-            v-model="regionSelected"
-            placeholder="Select a county"
-            prepend-icon="mdi-map-search"
-            :items="regionsAvailable"
-            :item-text="[1]"
-            :item-value="[0]"
-        )
-        v-tooltip(bottom)
-          template(v-slot:activator="{on}")
-            v-icon(color="orange" v-on="on" @click="helpShow = !helpShow") mdi-information-outline
-          span Click for additional information and data sources.
-        v-dialog(v-model="helpShow" max-width="40em")
-          v-card
-            v-card-title
-              v-icon mdi-information-outline
-              span(style="padding-left: 0.25rem") Information
-            v-card-text
-              p The information for this dashboard comes from several sources, including:
-                ul
-                  li #[a(href="https://github.com/nytimes/covid-19-data") the New York Times' GitHub Repository],
-                  li #[a(href="https://github.com/descarteslabs/DL-COVID-19") Descartes Labs' GitHub Repository],
-                  li #[a(href="https://www.ers.usda.gov/data-products/county-level-data-sets/download-data/") the USDA's County-Level Datasets],
-                  li and #[a(href="https://covidtracking.com/api") CovidTracking.com's API].
-              p #[a(href="d/data.xlsx") Download all data as a single .xlsx file]
-            v-card-actions
-              v-btn(color="primary" @click="helpShow = !helpShow") OK
+  v-card(class='page')
+    app-header(v-on:search='onSearch', :regionSelected='regionSelected' :regions='regionsAvailable')
+    v-card(class='charts')
+      .chartjs-fullscreen
+        div(style="position: absolute; left: 0; top: 0; bottom: 0; width: 50%")
+          canvas(ref="mychart")
+        div(style="position: absolute; left: 50%; top: 0; bottom: 0; width: 50%")
+          canvas(ref="mychart2")
 </template>
 
 <style lang="scss">  
@@ -61,12 +34,19 @@
     }
   }
 
-  .chartjs-fullscreen {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
+  .page {
     height: 100vh;
+  }
+  .charts {
+    position: relative;
+
+    .chartjs-fullscreen {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 90vh;
+    }
   }
 </style>
 
@@ -76,17 +56,21 @@ import chartjs from 'chart.js';
 import Vue from 'vue';
 // @ is an alias to /src
 
+import Header from '../Header/index.vue';
+
 export default Vue.extend({
   name: 'county-over-time',
 
   components: {
-    //HelloWorld: () => import('@/components/HelloWorld.vue'),
+    'app-header': Header,
   },
 
   computed: {
     regionSelected: {
-      get() { return this.$route.params.fips; },
-      set(v: string) { this.$router.push({ name: this.$options.name, params: {fips: v}}); },
+      get(): string { return this.$route.params.fips; },
+      set(v: string) {
+        this.$router.push({ name: this.$options.name, params: {fips: v}});
+      },
     },
   },
 
@@ -198,6 +182,9 @@ export default Vue.extend({
   },
 
   methods: {
+    onSearch(term: string) {
+      this.regionSelected = term;
+    },
     async reloadData() {
       const fips = this.regionSelected;
       const fipsBucket = fips.substring(0, 4);

@@ -3,7 +3,7 @@ import VueRouter, { RouteConfig } from 'vue-router'
 
 Vue.use(VueRouter)
 
-  const routes: Array<RouteConfig> = [
+const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'home',
@@ -17,11 +17,10 @@ Vue.use(VueRouter)
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "CountyOverTime" */ '../components/CountyOverTime/index.vue'),
   },
-]
+];
 
 const router = new VueRouter({
   routes
-})
+});
 
-export default router
-
+export default router;
