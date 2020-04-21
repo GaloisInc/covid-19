@@ -39,6 +39,9 @@ jobs:
         git config user.email "github-page-builder-which-is-not-real@galois.com"
         git config user.name "GitHub Page Builder"
         git config user.password $TOKEN
+
+    - name: List existing cache files
+      run: "ls -l ./data_pipelines/_cache || echo 'Nothing cached'"
     
     - name: Deploy GitHub Pages 🚀
       run: ./website/deploy.py --yes-to-all
