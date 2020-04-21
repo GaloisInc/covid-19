@@ -198,14 +198,47 @@ export default Vue.extend({
         county[c] = v.map(x => x === null ? NaN : x);
       }
 
+      // Convert a few, key values to derivatives
+      // (First, assert dates are contiguous.
+      let dateLast = '0000-00-00';
+      for (const d of county['date']) {
+        if (dateLast >= d) {
+          console.log(`ERROR: ${dateLast} >= ${d}`);
+          break;
+        }
+        dateLast = d;
+      }
+      for (const c of ['state_test_positive', 'state_test_negative', 'cases', 'deaths']) {
+        county[c + '_orig'] = county[c];
+
+        let vBase = 0;
+        let vBuffer = 0;
+        // If zero, no impulse.  Otherwise, take derivative after treating signal as
+        // an impulse over time rather than an impulse.
+        // Sum should be same at end.
+        const u = Math.exp(-1 / 5);
+        county[c] = county[c].map((x: number) => {
+          if (!isNaN(x)) {
+            vBuffer *= u;
+            vBuffer += (x - vBase) * (1 - u);
+            vBase = x;
+            return vBuffer;
+          }
+          return NaN;
+        });
+      }
+      (window as any).county = county;
+
       let n = county.state_test_positive.length;
       while (isNaN(county.state_test_positive[n])) {
         n -= 1;
       }
       const testsStateMax = county.state_test_positive[n] + county.state_test_negative[n];
-      const testsVolume = county.state_test_positive.map((v: number, i: number) => {
-        return (v + county.state_test_negative[i]) * 100 / testsStateMax;
+      const testsVolumeCount = county.state_test_positive.map((v: number, i: number) => {
+        return (v + county.state_test_negative[i]);
       });
+      const testsVolumeMax = Math.max.apply(null, testsVolumeCount.map((x: number) => isNaN(x) ? 0 : x));
+      const testsVolume = testsVolumeCount.map((x: number) => x * 100 / testsVolumeMax);
       const testsPositive = county.state_test_positive.map((v: number, i: number) => {
         return 100 * v / (v + county.state_test_negative[i]);
       });
@@ -214,25 +247,32 @@ export default Vue.extend({
       chart.data.labels = county.date;
       chart.data.datasets = [
         {
-          label: 'Cases', 
+          label: 'New Cases / Day',
           data: county.cases,
           backgroundColor: 'red',
           borderColor: 'red',
           fill: false,
         },
         {
-          label: 'Mobility, % of Normal', 
-          data: county.mobility_m50_index.map((x: number) => Math.min(100, x)), 
-          backgroundColor: 'lightgrey',
-          borderColor: 'grey',
-          yAxisID: 'second-y',
-        },
-        {
-          label: 'State-Wide Testing, % of Most Recent', 
+          label: 'State-Wide Tests / Day, % of Maximum', 
           data: testsVolume, 
           backgroundColor: 'blue',
           borderColor: 'blue',
           fill: false,
+          yAxisID: 'second-y',
+        },
+        {
+          label: 'Deaths / Day',
+          data: county.deaths,
+          backgroundColor: 'rgba(0.4, 0.4, 0.4, 0.6)',
+          borderColor: 'black',
+          fill: true,
+        },
+        { // Plot mobility below deaths
+          label: 'Mobility, % of Normal', 
+          data: county.mobility_m50_index.map((x: number) => Math.min(100, x)), 
+          backgroundColor: 'lightgrey',
+          borderColor: 'grey',
           yAxisID: 'second-y',
         },
       ];
