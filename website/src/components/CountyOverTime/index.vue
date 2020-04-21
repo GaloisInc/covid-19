@@ -203,7 +203,7 @@ export default Vue.extend({
       let dateLast = '0000-00-00';
       for (const d of county['date']) {
         if (dateLast >= d) {
-          console.log(`ERROR: ${dateLast} >= ${d}`);
+          console.error(`ERROR: ${dateLast} >= ${d}`);
           break;
         }
         dateLast = d;
