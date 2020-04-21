@@ -48,9 +48,9 @@
       v-card(class='pa-5')
         v-card-text
           p(class='display-1 text--primary')  Mobility, Cases, and Testing
-          p Everyone knows that case numbers are rising, but is testing keeping up with the spread of the disease?  Shown here is mobility, known-positive-cases of COVID-19, and volume of testing administered, plotted for five different US counties.  
-          p While mobility data from Descartes Labs corroborates that the public is adhering to shelter-in-place orders, the number of positive cases is rising linearly with the amount of testing applied to the public.  This can be further seen by looking at the percentage of tests coming back positive over time - when that percentage is increasing over time, the disease is spreading faster than testing.  
-          p What this means: we don’t actually know the percentage of population affected by COVID-19 in some states, such as New York or Michigan.  The disease’s spread is outpacing current testing efforts, particularly in hotspots such as New York and Michigan.  On the other hand, states such as Oregon, California, and Florida appear to be administering adequate testing for the time being. 
+          p COVID-19 is still spreading to new cases, but is testing keeping up with the spread of the disease?  Shown here is mobility, known-positive-cases of COVID-19, and volume of testing administered, plotted for different US counties.
+          p While mobility data from Descartes Labs corroborates that the public adhered to shelter-in-place orders, the number of positive cases was rising linearly with the amount of testing.  This could be further seen by looking at the percentage of tests coming back positive over time - when that percentage was increasing over time, the disease was spreading faster than testing was being rolled out.
+          p What this means: we did not actually know the percentage of population affected by COVID-19 in some states, such as New York before April 6th, or Michigan before April 14th.  The disease’s spread was outpacing testing efforts.  On the other hand, states such as Oregon, California, and Florida appear to have administered adequate testing during those times. 
           p The information for this dashboard comes from several sources, including:
           div.my-2
             v-btn(text, color='primary accent-4', href='https://github.com/nytimes/covid-19-data') the New York Times' GitHub Repository
