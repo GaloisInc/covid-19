@@ -160,8 +160,10 @@ def _save(file_out):
                 'header': 4,
             },
             'unemployment': {
-                'county': 'Area_name',
-                'header': 4,
+                'fips': 'FIPStxt',
+                'state': 'Stabr',
+                'county': 'area_name',
+                'header': 7,
                 'county_strip_state': True,
             },
             'poverty': {
@@ -171,6 +173,8 @@ def _save(file_out):
                 'header': 4,
             },
             'population': {
+                'fips': 'FIPStxt',
+                'county': 'Area_Name',
                 'header': 2,
             },
     }
@@ -183,6 +187,10 @@ def _save(file_out):
             df = None
             df = pd.read_excel(io.BytesIO(v),
                     header=info['header'])
+
+            # Patch out 'WN'... from May 2020 update
+            if k == 'unemployment':
+                df = df[df[info['state']] != 'WN']
 
             def update_row(rowdata):
                 # Standardize!
@@ -202,14 +210,23 @@ def _save(file_out):
                     if county_val.lower().endswith(e):
                         county_val = county_val[:-len(e)]
 
+                county_val_old = county_val
+                state_val_old = state_val
                 rowdata['state'] = state_val = resolve_state(state_val)
                 if f'{fips_val:05d}'.endswith('000'):
                     # State or country code.
                     county_val = 'all'
                 rowdata['county'] = county_val = resolve_county(county_val,
                         state=state_val)
+
+                # Weird bug in May 2020 update
+                if f'{fips_val:05d}' == '56000' and state_val_old == 'WI' and county_val_old == 'Wyoming':
+                    # Actually Wyoming.
+                    rowdata['county'] = '56000'
+                    rowdata['state'] = 'WY'
+
                 assert float(rowdata['county']) == fips_val, \
-                        f'{rowdata["county"]} != {fips_val} // {rowdata}'
+                        f'{rowdata["county"]} != {fips_val} // {state_val_old} // {county_val_old} // {rowdata}'
 
                 return rowdata
             df = df.apply(update_row, axis=1)
