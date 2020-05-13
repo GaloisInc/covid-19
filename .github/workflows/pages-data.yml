@@ -8,7 +8,7 @@ on:
   repository_dispatch:
     type: update-data
   schedule:
-    - cron: '0 13 * * *'
+    - cron: '0 20 * * *'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
