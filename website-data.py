@@ -19,8 +19,8 @@ def main():
     contains up-to-date information from `data_pipelines`.
     """
     _clean_target()
-    _county_list()
-    _county_data()
+    counties_with_data = _county_data()
+    _county_list(counties_with_data)
     _data_export()
 
 
@@ -38,8 +38,11 @@ def _clean_target():
 
 def _county_data():
     """Build per-county data.
+
+    Returns list of counties which have data
     """
     print('Building per-county data...')
+    counties_with_data = set()
 
     import data_pipelines.county_nytimes_covid_stats as covid_stats
     import data_pipelines.state_covidtracking_com_covid_testing as testing
@@ -116,6 +119,7 @@ def _county_data():
             bucket_data = {}
 
         county = bucket_data.setdefault(row['county'], {})
+        counties_with_data.add(row['county'])
         data = dict(row)
         data.pop('county')
         for k, v in data.items():
@@ -126,9 +130,10 @@ def _county_data():
             all_v.append(v)
 
     save_bucket()
+    return counties_with_data
 
 
-def _county_list():
+def _county_list(counties_with_data):
     """Builds a list of all available counties.  Used for search.
     """
     print('Building a list of all available counties for use by search...')
@@ -143,6 +148,9 @@ def _county_list():
             if f.startswith('00') or county_fips == '000':
                 # Skip full US / full county data at the moment, until
                 # it's better supported.
+                continue
+            if f not in counties_with_data:
+                # Don't list this on the website, as there's no data.
                 continue
             entries[f] = data_pipelines.util.resolve_county_name_full(f)
 
