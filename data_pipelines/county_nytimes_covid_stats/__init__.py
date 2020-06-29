@@ -53,8 +53,8 @@ def _save(file_out):
                 # 'New York' county.
                 assert rowdata['county'] == 'New York City', rowdata
                 rowcounty = resolve_county('New York', state=rowstate)
-            elif rowstate == 'MO' and rowdata['county'] == 'Kansas City':
-                # Special NYTimes entry.
+            elif rowstate == 'MO':  #  and rowdata['county'] in ('Kansas City', 'Joplin'):
+                # Special NYTimes entries
                 to_delete.append(rowdata.name)
                 return rowdata
             else:
