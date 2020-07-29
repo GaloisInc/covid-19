@@ -35,9 +35,9 @@ def _save(file_out):
         rowdata['date'] = resolve_date(rowdata['date'], yearfirst=True,
                 nodashes=True)
         rowdata['state'] = resolve_state(rowdata['state'])
-        del rowdata['fips']
         return rowdata
     df = df.apply(update_row, axis=1)
+    df = df.drop('fips', axis=1)
     df.to_pickle(file_out)
 
 

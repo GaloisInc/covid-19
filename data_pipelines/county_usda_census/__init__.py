@@ -197,9 +197,6 @@ def _save(file_out):
                 county_val = rowdata[info['county']]
                 state_val = rowdata[info['state']]
                 fips_val = rowdata[info['fips']]
-                del rowdata[info['county']]
-                del rowdata[info['state']]
-                del rowdata[info['fips']]
 
                 if info.get('county_strip_state'):
                     # Entries look like "Autauga County, AL"
@@ -230,6 +227,8 @@ def _save(file_out):
 
                 return rowdata
             df = df.apply(update_row, axis=1)
+            for col in ['county', 'state', 'fips']:
+                df = df.drop(info[col], axis=1)
 
             # Alias any year-suffixed fields as their latest version
             latest = {}

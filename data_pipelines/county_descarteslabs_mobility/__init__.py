@@ -35,7 +35,6 @@ def _save(file_out):
     def update_row(rowdata):
         rowdata['date'] = resolve_date(rowdata['date'])
         fips = rowdata['fips']
-        del rowdata['fips']
         if pd.isna(fips):
             fips = None
         else:
@@ -45,6 +44,7 @@ def _save(file_out):
         rowdata['state'] = resolve_state_name(rowdata['county'])
         return rowdata
     df = df.apply(update_row, axis=1)
+    df = df.drop('fips', axis=1)
     df.to_pickle(file_out)
 
 
