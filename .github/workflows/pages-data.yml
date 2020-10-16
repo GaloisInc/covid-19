@@ -1,49 +1,33 @@
-# Workflow for updating GitHub pages (and the underlying data)
-
 name: GitHub Pages Data Updater
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
-  repository_dispatch:
-    type: update-data
+  workflow_dispatch:
   schedule:
-    - cron: '0 20 * * *'
+    - cron: "0 20 * * *"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   update:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    runs-on: ubuntu-latest
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout 🛎️
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
 
-    - name: Set up Python 🐍
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r requirements.txt
 
-    - name: Install Python dependencies 🐍
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libxml2-dev libxslt-dev
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt
+      - name: Configure GitHub
+        env:
+          TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          git config user.email "github-page-builder-which-is-not-real@galois.com"
+          git config user.name "GitHub Page Builder"
+          git config user.password $TOKEN
 
-    - name: Configure GitHub 🐙
-      env:
-        TOKEN: ${{secrets.GITHUB_TOKEN}}
-      run: |
-        git config user.email "github-page-builder-which-is-not-real@galois.com"
-        git config user.name "GitHub Page Builder"
-        git config user.password $TOKEN
+      - name: List existing cache files
+        run: "ls -l ./data_pipelines/_cache || echo 'Nothing cached'"
 
-    - name: List existing cache files
-      run: "ls -l ./data_pipelines/_cache || echo 'Nothing cached'"
-    
-    - name: Deploy GitHub Pages 🚀
-      run: ./website/deploy.py --yes-to-all
+      - name: Deploy GitHub Pages 🚀
+        run: ./website/deploy.py --yes-to-all
