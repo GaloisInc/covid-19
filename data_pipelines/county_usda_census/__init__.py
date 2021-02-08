@@ -160,10 +160,10 @@ def _save(file_out):
                 'header': 4,
             },
             'unemployment': {
-                'fips': 'FIPStxt',
+                'fips': 'fips_txt',
                 'state': 'Stabr',
                 'county': 'area_name',
-                'header': 7,
+                'header': 4,
                 'county_strip_state': True,
             },
             'poverty': {
