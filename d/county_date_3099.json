@@ -1,0 +1,1 @@
+{"30999": {"date": ["2020-03-31", "2020-04-01"], "state": ["MT", "MT"], "cases": [0, 0], "deaths": [1.0, 1.0], "mobility_m50": [null, null], "mobility_m50_index": [null, null], "mobility_samples": [null, null], "population": [null, null], "state_test_positive": [184.0, 208.0], "state_test_negative": [4234.0, 4710.0], "state_test_pending": [null, null]}}

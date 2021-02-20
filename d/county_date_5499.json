@@ -1,0 +1,1 @@
+{"54999": {"date": ["2020-04-01", "2020-05-17"], "state": ["WV", "WV"], "cases": [0, 2], "deaths": [1.0, 0.0], "mobility_m50": [null, null], "mobility_m50_index": [null, null], "mobility_samples": [null, null], "population": [null, null], "state_test_positive": [191.0, 1490.0], "state_test_negative": [4384.0, 74000.0], "state_test_pending": [null, null]}}

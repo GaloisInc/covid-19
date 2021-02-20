@@ -1,0 +1,1 @@
+{"42999": {"date": ["2020-03-31", "2020-04-03"], "state": ["PA", "PA"], "cases": [0, 18], "deaths": [1.0, 0.0], "mobility_m50": [null, null], "mobility_m50_index": [null, null], "mobility_samples": [null, null], "population": [null, null], "state_test_positive": [4843.0, 8420.0], "state_test_negative": [37645.0, 53695.0], "state_test_pending": [null, null]}}
